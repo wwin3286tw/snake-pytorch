@@ -3,13 +3,16 @@
 # 1.802.2021
 
 import pygame
+import numpy as np
 import random
 from enum import Enum
 from collections import namedtuple
 import numpy as np
+import os
+os.environ["SDL_VIDEODRIVER"] = "dummy"  # 這應該在導入 pygame 之前設置
 
 pygame.init()
-font = pygame.font.SysFont('arial',25)
+font = pygame.font.Font('NotoSansCJK-Regular.ttc',25)
 
 WHITE = (255, 255, 255)
 RED = (200, 0, 0)
@@ -19,7 +22,7 @@ BLACK = (0, 0, 0,)
 
 BLOCK_SIZE = 20
 SPEED = 500
-
+Point = namedtuple('Point', 'x, y')
 
 class Direction(Enum):
     RIGHT = 1
@@ -28,7 +31,7 @@ class Direction(Enum):
     DOWN = 4
 
 
-Point = namedtuple('Point', 'x, y')
+
 
 
 class SnakeGameAI:
