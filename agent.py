@@ -137,9 +137,20 @@ class Agent:
             final_move[move] = 1
 
         return final_move
+import multiprocessing
+from multiprocessing import Process
+def run_training_sessions():
+    processes = []
+    for i in range(4):  # Create four training processes
+        p = Process(target=train, args=(i,))
+        p.start()
+        processes.append(p)
 
+    for p in processes:
+        p.join()
 
-def train():
+def train(process_id=None):
+    # 加入進程編號以區分不同進程的輸出
     plot_scores = []
     plot_mean_scores = []
     record = 0
@@ -147,24 +158,14 @@ def train():
     agent = Agent()
     game = SnakeGameAI()
     while True:
-        # pobiera stary stan
         state_old = agent.get_state(game)
-
-        # get move
         final_move = agent.get_action(state_old)
-
-        # preform move and get new state
         reward, done, score = game.play_step(final_move)
         state_new = agent.get_state(game)
-
-        # train short memory
         agent.train_short_memory(state_old, final_move, reward, state_new, done)
-
-        # remember
         agent.remember(state_old, final_move, reward, state_new, done)
 
         if done:
-            # train long term memory, plt results
             game.reset()
             agent.number_games += 1
             agent.train_long_memory()
@@ -173,20 +174,19 @@ def train():
                 record = score
                 agent.model.save()
 
-            print('Game: ', agent.number_games, 'Score: ', score, 'Record: ', record)
+            print(f'Process {process_id} - Game: {agent.number_games}, Score: {score}, Record: {record}')
 
             plot_scores.append(score)
             total_score += score
             mean_score = total_score / agent.number_games
             plot_mean_scores.append(mean_score)
-            #plot(plot_scores, plot_mean_scores)
             plt.close()
-            plt.plot(plot_scores,'-')
-            plt.plot(plot_mean_scores,"-")
-            plt.title("Trening Q deep learning gry w snake'a")
-            plt.xlabel('Liczba gier')
-            plt.ylabel('Punkty')
-            plt.savefig('runTest.png')
+            plt.plot(plot_scores, '-')
+            plt.plot(plot_mean_scores, "-")
+            plt.title(f"Process {process_id} - Training Q Learning Snake Game")
+            plt.xlabel('Number of Games')
+            plt.ylabel('Score')
+            plt.savefig(f'runTest_{process_id}.png')
 
 
 def test():
@@ -249,6 +249,7 @@ def test():
 
 
 if __name__ == '__main__':
-    #train()
-    test()
+    run_training_sessions()
+
+    #test()
 
